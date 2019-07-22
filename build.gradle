@@ -1,0 +1,84 @@
+buildscript {
+    ext {
+        junitPlatformVersion = '1.0.3'
+    }
+
+    repositories {
+        maven {
+            url "http://nexus/repository/maven-public/"
+        }
+        maven {
+            url "https://jitpack.io/"
+        }
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath("org.junit.platform:junit-platform-gradle-plugin:${junitPlatformVersion}")
+    }
+}
+ext {
+    lombokVersion = '1.16.18'
+}
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'jacoco'
+
+
+group = 'com.assignment'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+
+repositories {
+    maven {
+        url "http://nexus/repository/maven-public/"
+    }
+    maven {
+        url "https://jitpack.io/"
+    }
+    mavenCentral()
+    jcenter()
+}
+
+ext {
+    lombokVersion = '1.16.18'
+    jacksonDatatypeVersion = '2.8.9'
+    jacocoVersion = '0.8.0'
+    mockitoVersion = '2.19.0'
+}
+
+jacoco {
+    toolVersion = "$jacocoVersion"
+}
+
+test { finalizedBy jacocoTestReport }
+
+configurations {
+    testAgent {
+        transitive = false
+    }
+}
+
+tasks.withType(JavaExec) {
+    if (it.name == 'junitPlatformTest') {
+        doFirst {
+            jvmArgs "-javaagent:${configurations.testAgent.singleFile}=destfile=${project.buildDir.name}/jacoco/test.exec"
+        }
+    }
+}
+
+
+dependencies {
+    implementation 'com.github.Simonwep:java-express:0.1.1'
+    // Project Lombok
+    compile "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    //jackson
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonDatatypeVersion")
+    testCompile group: "org.mockito", name: "mockito-core", version: '2.19.0'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testAgent("org.jacoco:org.jacoco.agent:$jacocoVersion:runtime")
+}
