@@ -2,6 +2,7 @@ package com.assignment.backend.dao.impl;
 
 import com.assignment.backend.dao.AccountDAO;
 import com.assignment.backend.entity.Account;
+import com.assignment.backend.exceptions.AccountDoesNotExistException;
 import com.assignment.backend.exceptions.AccountExistException;
 
 import java.time.LocalDate;
@@ -47,7 +48,7 @@ public class SavingsAccountDAOImpl implements AccountDAO {
     public Account update(Account account) {
         // This means no account existed so update failed. return null
         if (null == accountMap.replace(account.getAccountNumber(), account)) {
-            return null;
+            throw new AccountDoesNotExistException(String.format("Account with number %s does not exist", account.getAccountNumber()));
         }
         // Update succeeded return the account
         return account;

@@ -13,8 +13,8 @@ public class Account {
     private final String accountNumber;
     private final LocalDate dateCreated;
     private double balance;
-    private Lock balanceChangeLock;
-    private Condition sufficientFundsCondition;
+    private final Lock balanceChangeLock;
+    private final Condition sufficientFundsCondition;
 
 
 
