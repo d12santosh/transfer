@@ -1,86 +1,121 @@
 package com.assignment.backend.dao.impl;
 
+import com.assignment.backend.TestFixture;
 import com.assignment.backend.dao.AccountDAO;
 import com.assignment.backend.entity.Account;
+import com.assignment.backend.exceptions.AccountDoesNotExistException;
 import com.assignment.backend.exceptions.AccountExistException;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import com.assignment.backend.exceptions.InsufficientBalanceException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.Optional;
+import java.util.concurrent.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class SavingsAccountDAOImplTest {
-
-    private static final double DUMMY_BALANCE = 10d;
-    private static final String DUMMY_ACCOUNT_NUMBER = "accountNumber";
-    private static final String MSG_FOR_ACCOUNT_NUMBER = "The created Account Number";
-    private static final String MSG_FOR_ACCOUNT_BALANCE = "The Initial Account Balance";
+class SavingsAccountDAOImplTest extends TestFixture {
 
     private AccountDAO daoToTest;
+    private Account dummyAccount;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         daoToTest = new SavingsAccountDAOImpl();
+        dummyAccount = daoToTest.create(DUMMY_ACCOUNT_NUMBER, DUMMY_BALANCE);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         daoToTest = null;
     }
 
     @Test
-    public void test_create() {
-        Account account = daoToTest.create(DUMMY_ACCOUNT_NUMBER, DUMMY_BALANCE);
-        assertNotNull(account);
-        assertEquals(MSG_FOR_ACCOUNT_NUMBER, DUMMY_ACCOUNT_NUMBER, account.getAccountNumber());
-        Assert.assertEquals(MSG_FOR_ACCOUNT_BALANCE, DUMMY_BALANCE, account.getBalance(), 0);
-
-
-    }
-
-    @Test(expected = AccountExistException.class)
-    public void test_create_To_Throw_Account_exist_Exception() {
-        Account account = daoToTest.create(DUMMY_ACCOUNT_NUMBER, DUMMY_BALANCE);
-        assertNotNull(account);
-        assertEquals(MSG_FOR_ACCOUNT_NUMBER, DUMMY_ACCOUNT_NUMBER, account.getAccountNumber());
-        Assert.assertEquals(MSG_FOR_ACCOUNT_BALANCE, DUMMY_BALANCE, account.getBalance(), 0);
-        daoToTest.create(DUMMY_ACCOUNT_NUMBER, DUMMY_BALANCE);
+    void test_create_Happy_Path() {
+        assertNotNull(dummyAccount);
+        assertEquals(DUMMY_ACCOUNT_NUMBER, dummyAccount.getAccountNumber(), MSG_FOR_ACCOUNT_NUMBER);
+        assertEquals(DUMMY_BALANCE, dummyAccount.getBalance());
     }
 
     @Test
-    public void test_get_Happy_Scenario() {
-        Account account = daoToTest.create(DUMMY_ACCOUNT_NUMBER, DUMMY_BALANCE);
-        assertNotNull(account);
-        assertEquals(MSG_FOR_ACCOUNT_NUMBER, DUMMY_ACCOUNT_NUMBER, account.getAccountNumber());
-        Assert.assertEquals(MSG_FOR_ACCOUNT_BALANCE, DUMMY_BALANCE, account.getBalance(), 0);
+    void test_create_To_Throw_Account_exist_Exception() {
+        assertThrows(AccountExistException.class, () -> daoToTest.create(DUMMY_ACCOUNT_NUMBER, DUMMY_BALANCE));
+    }
+
+    @Test
+    void test_get__Happy_Path() {
         Optional<Account> actual = daoToTest.get(DUMMY_ACCOUNT_NUMBER);
         assertTrue(actual.isPresent());
         assertEquals(actual.get().getAccountNumber(), DUMMY_ACCOUNT_NUMBER);
     }
 
     @Test
-
-    public void test_get_with_Invalid_account_Number() {
-        Optional<Account> actual = daoToTest.get(DUMMY_ACCOUNT_NUMBER);
+    void test_get_with_Invalid_account_Number() {
+        Optional<Account> actual = daoToTest.get(DUMMY_ACCOUNT_NUMBER_1);
         assertFalse(actual.isPresent());
     }
 
     @Test
-    public void update() {
+    void test_update_Happy_Path() throws InterruptedException {
+        dummyAccount.withdraw(5d);
+        Account actual = daoToTest.update(dummyAccount);
+        assertEquals(5d, actual.getBalance());
     }
 
     @Test
-    public void delete() {
+    void test_Update_For_Condition_Await_For_Withdrawing_And_Depositing_Amount() {
+        Thread withdraw = new Thread(() -> {
+            try {
+                dummyAccount.withdraw(25d);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        Thread deposit = new Thread(() -> dummyAccount.deposit(25d));
+
+        withdraw.start();
+        deposit.start();
+        Account actual = daoToTest.update(dummyAccount);
+        assertEquals(actual.getBalance(), 10d);
     }
 
     @Test
-    public void transfer() {
+    void test_Update_By_Withdrawing_Amount_Greater_Than_Balance() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<Account> future = executor.submit(() -> {
+            System.out.println("** Started");
+            dummyAccount.withdraw(25d);
+            return dummyAccount;
+        });
+
+        ExecutionException executionException = assertThrows(ExecutionException.class, future::get);// raises ExecutionException for any uncaught exception in child
+        assertEquals(executionException.getCause().getClass().getSimpleName(), InsufficientBalanceException.class.getSimpleName());
+        executor.shutdown();
+        System.out.println("** stopped");
     }
 
     @Test
-    public void listAccounts() {
+    void test_update_With_invalid_account_number() {
+        Account account = new Account(DUMMY_ACCOUNT_NUMBER_1, LocalDate.now(), DUMMY_BALANCE);
+        assertThrows(AccountDoesNotExistException.class, () -> daoToTest.update(account));
+    }
+
+    @Test
+    void delete_Happy_Path() {
+        daoToTest.delete(dummyAccount.getAccountNumber());
+        Optional<Account> account1 = daoToTest.get(DUMMY_ACCOUNT_NUMBER);
+        assertFalse(account1.isPresent());
+    }
+
+    @Test
+    void test_Delete_With_Invalid_Account_Number() {
+        assertThrows(AccountDoesNotExistException.class, () -> daoToTest.delete(DUMMY_ACCOUNT_NUMBER_1));
+    }
+
+    @Test
+    void listAccounts_Happy_Path() {
+        assertEquals(1, daoToTest.listAccounts().size());
     }
 }

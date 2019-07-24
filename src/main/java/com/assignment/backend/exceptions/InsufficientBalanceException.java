@@ -9,19 +9,18 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 @Slf4j
-public class AccountExistException extends RuntimeException implements ExceptionMapper<AccountExistException> {
-
-    public AccountExistException(String message) {
-        super(message);
+public class InsufficientBalanceException extends RuntimeException implements ExceptionMapper<InsufficientBalanceException> {
+    public InsufficientBalanceException(String msg) {
+        super(msg);
     }
 
-    public AccountExistException() {
+    public InsufficientBalanceException() {
         super();
     }
 
     @Override
-    public Response toResponse(AccountExistException exception) {
-        log.warn("AccountExistException thrown with following reason-->", exception);
+    public Response toResponse(InsufficientBalanceException exception) {
+        log.warn("InsufficientBalanceException thrown with following reason-->", exception);
         return Response.status(400).entity(exception.getMessage())
                 .type(MediaType.TEXT_PLAIN).build();
     }

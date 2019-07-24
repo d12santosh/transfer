@@ -35,7 +35,7 @@
 - [ ] Exception Handler - currently showing default error messages for input validation
 - [ ] Input validation Error and exception messages configuration into properties file
 - [ ] decide between framework less, java express or jersey and jersey grizzly2 server and java express
-- [ ] include swagger UI for intuitive
+- [ ] soft delete of Accounts
 
 ### Useful Links
 

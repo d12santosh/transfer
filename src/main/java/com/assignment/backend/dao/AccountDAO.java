@@ -14,9 +14,9 @@ public interface AccountDAO {
 
     Account update(Account account);
 
-    boolean delete(String accountNumber);
+    void update(Account... account);
 
-    Account transfer(Account from, Account to, double amount);
+    boolean delete(String accountNumber);
 
     List<Account> listAccounts();
 

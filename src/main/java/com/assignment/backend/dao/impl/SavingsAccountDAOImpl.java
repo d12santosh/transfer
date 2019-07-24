@@ -4,8 +4,10 @@ import com.assignment.backend.dao.AccountDAO;
 import com.assignment.backend.entity.Account;
 import com.assignment.backend.exceptions.AccountDoesNotExistException;
 import com.assignment.backend.exceptions.AccountExistException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import static com.assignment.backend.util.Constants.*;
+
+@Slf4j
 public class SavingsAccountDAOImpl implements AccountDAO {
 
     private final ConcurrentMap<String, Account> accountMap;
@@ -33,8 +38,11 @@ public class SavingsAccountDAOImpl implements AccountDAO {
         Account account = new Account(accountNumber, LocalDate.now(), balance);
 
         if (null != accountMap.putIfAbsent(account.getAccountNumber(), account)) {
-            throw new AccountExistException(String.format("Account with number %s already exist", accountNumber));
+            String msg = String.format(DEFAULT_AEE_MSG_FMT, accountNumber);
+            log.warn(msg);
+            throw new AccountExistException(msg);
         }
+        log.info("created account with number {} with balance {}", new Object[]{accountNumber, balance});
         return account;
     }
 
@@ -48,23 +56,25 @@ public class SavingsAccountDAOImpl implements AccountDAO {
     public Account update(Account account) {
         // This means no account existed so update failed. return null
         if (null == accountMap.replace(account.getAccountNumber(), account)) {
-            throw new AccountDoesNotExistException(String.format("Account with number %s does not exist", account.getAccountNumber()));
+            throw new AccountDoesNotExistException(String.format(DEFAULT_ANFE_MSG_FMT, account.getAccountNumber()));
         }
         // Update succeeded return the account
         return account;
     }
 
     @Override
-    public boolean delete(String accountNumber) {
-        return null != accountMap.remove(accountNumber);
-
+    public void update(Account... accounts) {
+        Arrays.stream(accounts).forEach(this::update);
     }
 
     @Override
-    public Account transfer(Account from, Account to, double amount) {
-
-
-        return null;
+    public boolean delete(String accountNumber) {
+        Account removedAccount = accountMap.remove(accountNumber);
+        if (null == removedAccount) {
+            throw new AccountDoesNotExistException(String.format(DEFAULT_ANFE_MSG_FMT, accountNumber));
+        }
+        log.info(String.format(DEFAULT_DELETE_MSG_FMT, accountNumber));
+        return true;
     }
 
     @Override
