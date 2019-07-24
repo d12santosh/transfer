@@ -1,12 +1,13 @@
-# transfer
-###Technical Challenge: Santosh Dhulipala
+# Account transfer
+### Technical Challenge: Santosh Dhulipala
 ### Application stack
 - Java 8
-- Java-express
+- Jersey
+- Grizzly 2
 - Gradle 5.5.1
 
 ### Project Implementation Outline
-- Rest service exposed for input
+- Rest service exposed for Creating Account, Transfer money, Withdrae
 - used Project Lombok for auto generating code (example :- setters and getters), please follow steps in configuring Lombok
 - Test cases and code coverage
 
