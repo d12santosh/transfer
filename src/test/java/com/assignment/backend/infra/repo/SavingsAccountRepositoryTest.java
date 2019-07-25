@@ -1,36 +1,33 @@
-package com.assignment.backend.dao.impl;
+package com.assignment.backend.infra.repo;
 
-import com.assignment.backend.TestFixture;
-import com.assignment.backend.dao.AccountDAO;
-import com.assignment.backend.entity.Account;
-import com.assignment.backend.exceptions.AccountDoesNotExistException;
-import com.assignment.backend.exceptions.AccountExistException;
-import com.assignment.backend.exceptions.InsufficientBalanceException;
-import org.junit.jupiter.api.AfterEach;
+import com.assignment.backend.application.exceptions.AccountDoesNotExistException;
+import com.assignment.backend.application.exceptions.AccountExistException;
+import com.assignment.backend.application.exceptions.InsufficientBalanceException;
+import com.assignment.backend.domain.entities.Account;
+import com.assignment.backend.domain.repo.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import static com.assignment.backend.TestFixture.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class SavingsAccountDAOImplTest extends TestFixture {
+class SavingsAccountRepositoryTest {
 
-    private AccountDAO daoToTest;
+    private AccountRepository daoToTest;
     private Account dummyAccount;
 
     @BeforeEach
     void setUp() {
-        daoToTest = new SavingsAccountDAOImpl();
-        dummyAccount = daoToTest.create(DUMMY_ACCOUNT_NUMBER, DUMMY_BALANCE);
+        daoToTest = new SavingsAccountRepository();
+        dummyAccount = daoToTest.create(getDummyAccount());
     }
 
-    @AfterEach
-    void tearDown() {
-        daoToTest = null;
-    }
 
     @Test
     void test_create_Happy_Path() {
@@ -41,7 +38,7 @@ class SavingsAccountDAOImplTest extends TestFixture {
 
     @Test
     void test_create_To_Throw_Account_exist_Exception() {
-        assertThrows(AccountExistException.class, () -> daoToTest.create(DUMMY_ACCOUNT_NUMBER, DUMMY_BALANCE));
+        assertThrows(AccountExistException.class, () -> daoToTest.create(getDummyAccount()));
     }
 
     @Test
@@ -98,7 +95,7 @@ class SavingsAccountDAOImplTest extends TestFixture {
 
     @Test
     void test_update_With_invalid_account_number() {
-        Account account = new Account(DUMMY_ACCOUNT_NUMBER_1, LocalDate.now(), DUMMY_BALANCE);
+        Account account = getDummyAccount1();
         assertThrows(AccountDoesNotExistException.class, () -> daoToTest.update(account));
     }
 
@@ -117,5 +114,10 @@ class SavingsAccountDAOImplTest extends TestFixture {
     @Test
     void listAccounts_Happy_Path() {
         assertEquals(1, daoToTest.listAccounts().size());
+    }
+
+    @Test
+    void getAll() {
+        assertEquals(1, daoToTest.getAll().size());
     }
 }

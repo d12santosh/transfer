@@ -1,4 +1,4 @@
-package com.assignment.backend.exceptions;
+package com.assignment.backend.application.exceptions;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,7 +20,7 @@ public class InsufficientBalanceException extends RuntimeException implements Ex
 
     @Override
     public Response toResponse(InsufficientBalanceException exception) {
-        log.warn("InsufficientBalanceException thrown with following reason-->", exception);
+        log.warn("InsufficientBalanceException thrown with following stacktrace-->", exception);
         return Response.status(400).entity(exception.getMessage())
                 .type(MediaType.TEXT_PLAIN).build();
     }

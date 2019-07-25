@@ -1,4 +1,4 @@
-package com.assignment.backend.rest;
+package com.assignment.backend.rest.request;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,4 +1,4 @@
-package com.assignment.backend.exceptions;
+package com.assignment.backend.application.exceptions;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +21,7 @@ public class AccountDoesNotExistException extends RuntimeException implements Ex
 
     @Override
     public Response toResponse(AccountDoesNotExistException exception) {
-        log.warn("AccountDoesNotExistException thrown with following reason-->", exception);
+        log.warn("AccountDoesNotExistException thrown with following stacktrace-->", exception);
         return Response.status(400).entity(exception.getMessage())
                 .type(MediaType.TEXT_PLAIN).build();
     }

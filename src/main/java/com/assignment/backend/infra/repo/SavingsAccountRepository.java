@@ -1,16 +1,14 @@
-package com.assignment.backend.dao.impl;
+package com.assignment.backend.infra.repo;
 
-import com.assignment.backend.dao.AccountDAO;
-import com.assignment.backend.entity.Account;
-import com.assignment.backend.exceptions.AccountDoesNotExistException;
-import com.assignment.backend.exceptions.AccountExistException;
+import com.assignment.backend.application.exceptions.AccountDoesNotExistException;
+import com.assignment.backend.application.exceptions.AccountExistException;
+import com.assignment.backend.domain.entities.Account;
+import com.assignment.backend.domain.repo.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -18,31 +16,31 @@ import java.util.stream.Collectors;
 import static com.assignment.backend.util.Constants.*;
 
 @Slf4j
-public class SavingsAccountDAOImpl implements AccountDAO {
+@Singleton
+public class SavingsAccountRepository implements AccountRepository {
 
-    private final ConcurrentMap<String, Account> accountMap;
+    private ConcurrentMap<String, Account> accountMap;
 
-    public SavingsAccountDAOImpl() {
+    @Inject
+    public SavingsAccountRepository() {
+        log.error("SavingsAccountDAOImpl --> Constructor is called");
         this.accountMap = new ConcurrentHashMap<>();
     }
 
     /**
-     * @param accountNumber account number to create new account
-     * @param balance       initial balance of account
+     * @param account account to create
      * @return newly created account
      * @throws AccountExistException if account exists
      */
     @Override
-    public Account create(String accountNumber, double balance) {
-
-        Account account = new Account(accountNumber, LocalDate.now(), balance);
+    public Account create(Account account) {
 
         if (null != accountMap.putIfAbsent(account.getAccountNumber(), account)) {
-            String msg = String.format(DEFAULT_AEE_MSG_FMT, accountNumber);
+            String msg = String.format(DEFAULT_AEE_MSG_FMT, account.getAccountNumber());
             log.warn(msg);
             throw new AccountExistException(msg);
         }
-        log.info("created account with number {} with balance {}", new Object[]{accountNumber, balance});
+        log.info("created account with number {} with balance {}", new Object[]{account.getAccountNumber(), account.getBalance()});
         return account;
     }
 
@@ -50,6 +48,11 @@ public class SavingsAccountDAOImpl implements AccountDAO {
     public Optional<Account> get(String accountNumber) {
         return Optional.ofNullable(accountMap.get(accountNumber));
 
+    }
+
+    @Override
+    public List<Account> getAll() {
+        return new ArrayList<>(accountMap.values());
     }
 
     @Override

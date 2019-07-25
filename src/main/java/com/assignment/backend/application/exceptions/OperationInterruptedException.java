@@ -1,4 +1,4 @@
-package com.assignment.backend.exceptions;
+package com.assignment.backend.application.exceptions;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,13 +14,14 @@ public class OperationInterruptedException extends RuntimeException implements E
     public OperationInterruptedException(String message) {
         super(message);
     }
-    public OperationInterruptedException(){
+
+    public OperationInterruptedException() {
         super();
     }
 
     @Override
     public Response toResponse(OperationInterruptedException exception) {
-        log.warn("OperationInterruptedException thrown with following reason-->", exception);
+        log.warn("OperationInterruptedException thrown with following stacktrace-->", exception);
         return Response.status(400).entity(exception.getMessage())
                 .type(MediaType.TEXT_PLAIN).build();
     }
