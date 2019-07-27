@@ -26,7 +26,7 @@
 
 ### To run application
  ```
- com.assignment.backend.BankApplication
+ execute com.assignment.backend.BankApplication
  ```
  ## List of services 
  #### creation of account (please execute this service to create accounts)
