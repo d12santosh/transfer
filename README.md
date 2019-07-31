@@ -1,5 +1,5 @@
 # Account transfer
-### Technical Challenge: Santosh Dhulipala
+
 ### Application stack
 - Java 8
 - Jersey
